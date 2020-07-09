@@ -10,6 +10,8 @@ function Navbar() {
         <div className="">
             <nav className="navbar navbar-expand-sm navbar-light bg-light">
                 <Link to="/" className="navbar-brand" >
+                    <img src='https://i.imgur.com/RBk47MR.jpg' style={{width: '50px', marginRight: '10px'}} />
+
                     UWUdemy
                 </Link>
             
