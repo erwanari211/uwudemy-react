@@ -8,6 +8,9 @@ import {
   useParams
 } from "react-router-dom";
 
+import { connect } from 'react-redux'; 
+import { useDispatch, useSelector } from 'react-redux'
+
 function App() {
   return (
     <Router>
@@ -22,9 +25,15 @@ function App() {
           <li>
             <Link to="/topics">Topics</Link>
           </li>
+          <li>
+            <Link to="/todos">Todos</Link>
+          </li>
         </ul>
 
         <Switch>
+        <Route path="/todos">
+            <Todos />
+          </Route>
           <Route path="/about">
             <About />
           </Route>
@@ -87,5 +96,43 @@ function Topic() {
   return <h3>Requested topic ID: {topicId}</h3>;
 }
 
+function Todos() {
+  let todoRef
 
-export default App;
+  const dispatch = useDispatch()
+  const todos = useSelector(state => state.todos)
+
+  const _handleNewTodo = (e) => {
+    e.preventDefault()
+     let newTodo = todoRef.value
+    dispatch({ type: 'ADD TODO', todo: newTodo })
+    todoRef.value = ''
+  }
+
+  return (
+    <div>
+      <h2>Todo List</h2>
+      <form onSubmit={_handleNewTodo}>
+        <label>New Todo </label>
+        <input ref={input => todoRef = input} />
+      </form>
+
+      <ul>
+        {todos.map((item, index) => <li key={index}>{item}</li>)}
+      </ul>  
+    </div>
+  );
+}
+
+
+// export default App;
+
+const mapStateToProps = state => ({
+  todos: state.todos
+});
+
+const mapDispatchToProp = dispatch => ({
+  addNewTodo: todo => dispatch({ type: 'ADD TODO', todo })
+})
+
+export default connect(mapStateToProps, mapDispatchToProp)(App);
