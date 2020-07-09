@@ -4,13 +4,18 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
+// 10. State Management Redux
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 import reducer from './reducers';
 
 const store = createStore(reducer);
 
-ReactDOM.render(
+/**
+ * 1. React JS dengan framework CRA.
+ */
+ ReactDOM.render(
+  //  10. State Management Redux
   <Provider store={store}>
     <App />
   </Provider>,

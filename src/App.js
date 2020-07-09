@@ -1,44 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import './App.css';
 import {
   BrowserRouter as Router,
   Switch,
   Route,
-  Link,
   useRouteMatch,
   useParams
 } from "react-router-dom";
 
-import { connect } from 'react-redux'; 
 import { useDispatch, useSelector } from 'react-redux'
 
+import ProductList from './components/ProductList'
+import Home from './pages/Home'
+import About from './pages/About'
+import Navbar from './components/Navbar'
+import Cart from './pages/Cart'
+import ContactUs from './pages/ContactUs'
+
+/**
+ * 3. Function Component
+ */
 function App() {
   return (
+    // 9. React Router
     <Router>
+      {/* 5. Composing */}
+      <Navbar />
       <div>
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/about">About</Link>
-          </li>
-          <li>
-            <Link to="/topics">Topics</Link>
-          </li>
-          <li>
-            <Link to="/todos">Todos</Link>
-          </li>
-        </ul>
-
-        <Switch>
-        <Route path="/todos">
-            <Todos />
+        <Switch>          
+          {/* 5. Composing */}
+          <Route path="/products">
+            <Products />
+          </Route>
+          <Route path="/product-detail">
+            <ProductDetail />
+          </Route>
+          <Route path="/cart">
+            <Cart />
           </Route>
           <Route path="/about">
             <About />
           </Route>
-          <Route path="/topics">
-            <Topics />
+          <Route path="/contact-us">
+            <ContactUs />
           </Route>
           <Route path="/">
             <Home />
@@ -49,90 +53,165 @@ function App() {
   );
 }
 
-function Home() {
-  return <h2>Home</h2>;
+/**
+ * 3. Function Component
+ * 6. Extracting Component
+ */
+function Products() {
+  // 10. State Management Redux
+  const products = useSelector(state => state.products)
+  const dispatch = useDispatch()
+
+  // 4. LifeCycle Method
+  // 8. Hooks
+  useEffect(() => {
+    console.log('Display products')
+  }, [])
+
+  const handleSearchProducts = (e) => {
+    e.preventDefault()
+    let search = inputSearch.current.value
+    // 10. State Management Redux
+    dispatch({ type: 'FILTER PRODUCT', search: search })
+  }
+
+  const inputSearch = React.createRef()
+  
+
+  return (
+    <div className="container">
+      <h2>Products</h2>
+
+      <div className="row mb-4">
+        <div className="col-md-4">
+          <form>
+            <div className="form-group">
+              <input className="form-control" name="search" placeholder="Search" ref={inputSearch} />
+            </div>
+            
+            <button className="btn btn-primary" onClick={handleSearchProducts}>Search</button>
+          </form>
+        </div>
+      </div>
+
+      {/* 5. Composing */}
+      <ProductList products={products} />
+    </div>
+  );
 }
 
-function About() {
-  return <h2>About</h2>;
-}
-
-function Topics() {
+/**
+ * 3. Function Component
+ * 6. Extracting Component
+ */
+function ProductDetail(){
   let match = useRouteMatch();
+
+  // 10. State Management Redux
+  const dispatch = useDispatch()
+
+  // 7. Lifting State Up
+  const addToCart = (product) => {
+    console.log(product)
+    // 10. State Management Redux
+    dispatch({ type: 'ADD TO CART', product: product })
+  }
 
   return (
     <div>
-      <h2>Topics</h2>
-
-      <ul>
-        <li>
-          <Link to={`${match.url}/components`}>Components</Link>
-        </li>
-        <li>
-          <Link to={`${match.url}/props-v-state`}>
-            Props v. State
-          </Link>
-        </li>
-      </ul>
-
-      {/* The Topics page has its own <Switch> with more routes
-          that build on the /topics URL path. You can think of the
-          2nd <Route> here as an "index" page for all topics, or
-          the page that is shown when no topic is selected */}
       <Switch>
-        <Route path={`${match.path}/:topicId`}>
-          <Topic />
+        <Route path={`${match.path}/:productId`}>
+          {/* 5. Composing */}
+          <Product addToCart={addToCart} />
         </Route>
         <Route path={match.path}>
-          <h3>Please select a topic.</h3>
+          404
         </Route>
       </Switch>
     </div>
   );
 }
 
-function Topic() {
-  let { topicId } = useParams();
-  return <h3>Requested topic ID: {topicId}</h3>;
-}
+/**
+ * 3. Function Component
+ * 6. Extracting Component
+ */
+function Product(props) {
+  let { productId } = useParams();
 
-function Todos() {
-  let todoRef
+  // 10. State Management Redux
+  const products = useSelector(state => state.products)
 
-  const dispatch = useDispatch()
-  const todos = useSelector(state => state.todos)
+  // 8. Hooks
+  const [product, setProduct] = useState({})
+  const [productExist, setProductExist] = useState(false)
 
-  const _handleNewTodo = (e) => {
-    e.preventDefault()
-     let newTodo = todoRef.value
-    dispatch({ type: 'ADD TODO', todo: newTodo })
-    todoRef.value = ''
+  // 8. Hooks
+  // 4. LifeCycle Method
+  useEffect(() => {
+    let item = products.filter((item) => parseInt(item.id) === parseInt(productId) );
+    if(item.length === 1){
+      setProduct(item[0])
+      setProductExist(true)
+    }
+    console.log(item)
+  }, [])
+
+  // 7. Lifting State Up
+  const handleAddToCart = () => {
+    props.addToCart(product)
+  }
+
+  if (productExist) {
+    return (
+      <div className="container">
+        <div className="row">
+          <div className="col-md-12">
+            <h2>Detail Product</h2>
+            <div className="card mb-4">
+              <div className="card-body">
+                <div className="media">
+                  <img className="mr-3" src={product.img} alt={product.name} />
+                  <div className="media-body">
+                    <h5 className="mt-0">{product.name}</h5>
+                    <p className="text-success">US${product.price}</p>
+
+                    {/* 12. Lists */}
+                    <ul className="list-inline">
+                      {product.tags.map((tag, index) => {
+                        return (
+                          <li className="list-inline-item" key={index}>
+                            <span className="badge badge-info">{tag}</span>
+                          </li>                        
+                        )
+                      })}
+                    </ul>  
+                    <button className="btn btn-primary" onClick={handleAddToCart}>Add to cart</button>
+                  </div>
+                </div>
+              </div>              
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div>
-      <h2>Todo List</h2>
-      <form onSubmit={_handleNewTodo}>
-        <label>New Todo </label>
-        <input ref={input => todoRef = input} />
-      </form>
-
-      <ul>
-        {todos.map((item, index) => <li key={index}>{item}</li>)}
-      </ul>  
+    <div className="container">
+      <div className="row">
+        <div className="col-md-12">
+          <h2>Detail Product</h2>
+          <div className="card mb-4">
+            <div className="card-body">
+              Product not found
+            </div>            
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
 
-// export default App;
-
-const mapStateToProps = state => ({
-  todos: state.todos
-});
-
-const mapDispatchToProp = dispatch => ({
-  addNewTodo: todo => dispatch({ type: 'ADD TODO', todo })
-})
-
-export default connect(mapStateToProps, mapDispatchToProp)(App);
+export default App;
